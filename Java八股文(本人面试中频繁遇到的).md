@@ -34,7 +34,7 @@ HashMap 的底层在 JDK8 之前是数组 + 链表实现的，也就是通过拉
 
 其次，HashMap 是允许键和值为 null 的，而 HashTable 不允许。
 
-## 二、JVM
+## 二、JVM 基础
 
 ### 1、JVM 的内存模型
 
@@ -59,3 +59,127 @@ Java 中类的加载是由类加载器来完成的，而类加载器不止一个
 链接阶段中的验证阶段就是验证字节码文件是否符合规范，准备阶段就是为类的静态变量分配内存，并设置默认初始值，解析阶段就是将方法区中的运行时常量池中的符号引用替换为直接引用。
 
 初始化阶段会执行类的构造器方法 clinit()，这个方法是由编译器收集类中静态变量的赋值动作和静态代码块中的语句，然后合并产生的。所以初始化阶段后，类的静态变量会被赋上我们给它设置的值。
+
+## 三、Java 并发编程
+
+### 1、 Java 中创建线程的四种方式
+
+Java 中创建线程有四种方式，分别是：
+
+- 继承 Thread 类并重写其 run 方法
+- 实现 Runnable 接口，然后将该 Runnable 对象传递给 Thread 类的构造器
+- 实现 Callable 接口，然后把它包装进一个 FutureTask 对象传给 Thread 类的构造器
+- 使用线程池来创建和管理线程
+
+### 2、Java 中线程的六种状态
+
+Java 的 Thread 类中有一个枚举类定义了 Java 线程的六种状态，分别是：
+
+- New：线程刚刚创建，但还没有调用 start 方法来启动
+- Runnable：处于就绪和正在运行状态的线程
+- Blocked：线程在等待锁
+- Waiting：线程正在等待另一个线程执行特定操作
+- Timed_Waiting：计时等待
+- Terminated：终止状态
+
+### 3、线程安全问题及其解决
+
+线程安全问题有三类，分别是：原子性、可见性和有序性问题。
+
+通过 synchronized 等锁机制可以解决原子性、可见性和有序性问题，通过 volatile 可以解决可见性和有序性问题，但是不能解决原子性问题。 
+
+### 4、Java 中有哪些常用的锁
+
+首先是 synchronized 关键字，也叫对象锁，我们在使用 synchronized 时通常会指定一个对象作为锁，线程在进入 synchronized 代码块时必须先获取该对象关联的锁，离开代码块时也会自动释放锁。
+
+其次是 JUC 包下的 ReentrantLock，相比于 synchronized，它提供了更高级的锁功能，比如支持在获取锁时设置超时时间、支持多个条件变量来进行线程间的通信，还可以用来实现公平锁等等。
+
+除此之外，还有 ReadWriteLock 读写锁，允许多个读取者，但只允许一个写入者，适用于读多写少这种场景。还有一些原子类中用到的这种 CAS 乐观锁，看似没有加锁，其实是在 CPU 指令层面实现的一种硬件锁。
+
+### 5、synchronized 和 ReentrantLock 的区别
+
+首先它们的底层实现不一样，synchronized 是通过对象关联的操作系统层面的监视器锁实现的，而 ReentrantLock 底层是基于 AQS 实现的。
+
+其次它们加锁解锁的方式也不同，synchronized 是在进入和离开同步代码块时自动加锁和解锁的，而 ReentrantLock 需要我们调用方法手动加锁和解锁。
+
+然后它们支持的功能也不同，ReentrantLock 的功能更丰富，它支持中断、支持在获取锁时设置超时时间、支持多个条件变量来进行线程间的通信等等。
+
+还有 synchronized 是非公平锁，而 ReentrantLock 既可以实现公平锁，也可以实现非公平锁。
+
+### 6、JUC 包下常用的类
+
+JUC 包下常用的类大致可以分为三类：
+
+第一类是线程安全相关的。比如常用的锁，像 ReentrantLock、ReadWriteLock。还有线程安全的集合，像 ConcurrentHashMap、CopyOnWriteArrayList。还有一些原子类，像 AtomicInteger、AtomicReference 等。还有一个用来实现线程隔离的类 ThreadLocal。
+
+第二类就是线程池相关的。比如 ThreadPoolExecutor，这是最核心的线程池类，用来创建和管理线程池，通过它可以灵活地配置线程池的参数以满足不同的并发处理需求。还有 Executors，这是一个线程池工厂类，提供了一系列静态方法用来创建不同类型的线程池，方便我们快速地创建线程池。
+
+第三类就是线程通信相关的。像 CountDownLatch、CyclicBarrier、Seamphore 等。
+
+### 7、ThreadLocal 的作用、原理和问题
+
+ThreadLocal 它是 Java 中解决线程安全问题的一种机制，通过它可以为每个线程设置独立的线程局部变量，这样就防止因为线程共享某个变量所带来的线程安全问题。除此之外，通过它还可以很方便地在线程内部进行参数的传递。
+
+ThreadLocal 的实现依赖于 Thread 类中的 ThreadLocalMap 字段，ThreadLocalMap 是线程独立的，即每个线程都有各自的 ThreadLocalMap 实例。我们通过 ThreadLocal 的 set 方法为线程设置局部变量时，其实就是以当前的 ThreadLocal 为 key，我们设置的值为 value，然后将其存入当前线程的 ThreadLocalMap 中，获取的时候也是同理，以 ThreadLocal 为 key，从当前线程的 ThreadLocalMap 中把对应的值取出来。
+
+使用 ThreadLocal 需要注意一个内存泄漏的问题。因为在我们的程序中，线程通常是基于线程池进行复用的，如果我们不及时地清除线程局部变量的话，它会一直存储在当前线程的 ThreadLocalMap 中。解决方法有两个：一个是将 ThreadLocal 实例设置为静态的，这样它就是全局唯一的，当我们下次再进入先前的线程时，依然可以通过 ThreadLocal 变量获取到先前设置的值，即我们没有丢失对线程局部变量的控制权；另一个更好的方法就是在每个线程执行完业务代码后，手动调用 ThreadLocal 的 remove 方法释放掉对应的线程局部变量。
+
+### 8、线程池的核心参数
+
+线程池的核心参数其实就是我们 new ThreadPoolExecutor 时需要指定的那几个参数，它们分别是：
+
+- 核心线程数
+- 最大线程数
+- 非核心线程的最大空闲时间
+- 阻塞队列
+- 线程工厂
+- 拒绝策略
+
+### 9、线程池的正确创建
+
+首先有个 Executors 类，这是一个线程池工厂类，它提供了一系列静态方法用来创建不同类型的线程池，方便我们快速地创建线程池。比如：
+
+- FixedThreadPool：固定线程数的线程池，即核心线程数和最大线程数相等
+- CachedThreadPool：线程数不固定的线程池，它的线程数几乎可以无限增大
+
+但是不推荐！通常我们会根据实际应用场景手动 new ThreadPoolExecutor 来创建线程池，这样可以更灵活地配置线程池的核心参数。比如：
+
+- CPU 密集型的任务：核心线程数要和 CPU 核心数相当，比如设置成 CPU 核心数 + 1
+- IO 密集型任务：核心线程数可以设置为 CPU 核心数的 2 倍，因为线程绝大部分时间用不到 CPU
+
+### 10、线程池的工作流程
+
+当我们提交一个任务给线程池时，线程池首先判断核心线程数有没有满，如果没满，就创建一个核心线程来执行任务。如果核心线程数已经满了，就将当前任务加入到阻塞队列。如果队列也满了，就会创建非核心线程来充当临时工去执行任务。随着任务不断添加，如果线程池中的所有线程数加起来已经达到最大线程数时，就会触发拒绝策略。常见的拒绝策略有：
+
+- AbortPolicy：直接抛出异常
+- DiscardPolicy：直接丢弃当前任务
+- DiscardOldestPolicy：丢弃阻塞队列中排队最久的那一个任务
+- CallerRunsPolicy：使用线程池的调用者所在的线程去执行任务
+- 自定义拒绝策略（实现 RejectedExecutionHandler 接口）
+
+### 11、实现一个单例模式
+
+首先私有化构造方法，不允许外部随意创建该类的对象。
+
+然后对外提供一个获取该类实例的方法，并通过 double check 检查该类是否已经存在实例。
+
+实例的引用要通过 volatile 修饰，这是为了防止`instance = new Singleton();`这行代码由于指令重排序导致将一个尚未完全初始化的对象引用赋值给了 instance 变量。
+
+```java
+public class Singleton {
+    private static volatile Singleton instance;
+
+    private Singleton() {}
+
+    public static Singleton getInstance() {
+        if (instance == null) {
+            synchronized (Singleton.class) {
+                if (instance == null) {
+                    instance = new Singleton();
+                }
+            }
+        }
+        return instance;
+    }
+}
+```
