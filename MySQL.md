@@ -8,22 +8,24 @@
 
 而 MySQL 则是一款数据库管理系统（DataBase Manage System，DBMS），通过它可以便捷地存储和管理数据。
 
-与 MySQL 交互需要通过一门结构化查询语言（Stuctured Query Languge）来实现，也就是 SQL。如何编写 SQL 使我们学习的重点。
+与 MySQL 交互需要通过一门结构化查询语言（Stuctured Query Languge）来实现，也就是 SQL。如何编写 SQL 是我们学习的重点。
 
 ## 二、SQL
 
-### 1. SQL 的分类
+SQL 是结构化查询语言，是一种专门操作关系型数据库的语言。SQL 有统一的标准，不同的数据库厂商都遵循这个标准，但是又各自有不同的扩展，所以 SQL 是有方言存在的。在学习 MySQL 时，要重点学习标准的 SQL 写法，同时也要了解 MySQL 特有的 SQL 方言。
+
+### 1、SQL 的分类
 
 SQL 根据其作用不同，可以分为以下四类：
 
-* DDL —— 数据定义语言 —— 用来定义数据库对象（数据库、表、字段）
+* DDL —— 数据定义语言 —— 用来定义数据库对象
 * DML —— 数据操作语言 —— 用来对表中的数据进行增删改操作
 * DQL —— 数据查询语言 —— 用来对表中的数据进行查询操作
-* DCL —— 数据控制语言 —— 用来创建数据库用户和控制数据库的访问权限
+* DCL —— 数据控制语言 —— 用来管理数据库的用户及其权限
 
-### 2. DDL
+### 2、DDL
 
-库定义：
+库定义相关的语句：
 
 ```sql
 # 查询所有数据库
@@ -40,7 +42,7 @@ SELECT DATABASE();
 DROP DATABASE [IF EXISTS] 数据库名;
 ```
 
-表定义：
+表定义相关的语句：
 
 ```sql
 # 查询当前库中的所有表
@@ -65,52 +67,66 @@ ALTER TABLE 表名 RENAME TO 新表名; # 重命名表
 DROP TABLE [IF EXISTS] 表名;
 ```
 
+### 3、DML
 
+```sql
+# 新增操作
+INSERT INTO 表名 VALUES (值1, 值2, ...); # 新增时指定所有字段
+INSERT INTO 表名 (字段1, 字段2, ...) VALUES (值1, 值2, ...); # 新增时指定部分字段
+INSERT INTO 表名 VALUES (值1, 值2, ...), (值1, 值2, ...), ...; # 批量新增
+INSERT INTO 表名 (字段1, 字段2, ...) VALUES (值1, 值2, ...), (值1, 值2, ...), ...;
+# 更新操作
+UPDATE 表名 SET 字段1 = 值1, 字段2 = 值2, ... [WHERE 条件];
+# 删除操作
+DELETE FROM 表名 [WHERE 条件];
+```
 
+### 4、DQL
 
+一个比较完整的 DQL 语句大概长这样：
 
+```sql
+SELECT [DISTINCT] * | 字段1 [AS 别名], 字段2 [AS 别名], ... # 加DISTINCT表示去重，加AS表示取别名，AS可以省略
+FROM 表名 [AS 别名]
+[WHERE 条件]
+[GROUP BY 字段]
+[HAVING 分组后条件]
+[ORDER BY 字段 [ASC | DESC]] # ASC表示升序排序，DESC表示降序排序，默认就是ASC，也可以指定多个排序字段
+[LIMIT [起始索引], 查询数量];
+```
 
+它的执行顺序为：FROM -> WHERE -> GROUP BY -> HAVING -> SELECT -> ORDER BY -> LIMIT
 
 ## 三、MySQL 的数据类型
 
 我们在建表时需要指定每个字段的数据类型以提高存储效率和节约存储空间。MySQL 中主要提供了数值、字符串和日期时间这三类数据类型。
 
-### 1. 数值类型
+### 1、数值类型
 
-整数：
-
-* TINYINT
-* SMALLINT
-* MEDIUMINT
-* INT
-* BIGINT
+整数：TINYINT、SMALLINT、MEDIUMINT、INT、BIGINT
 
 所有的整数类型都可以添加 UNSIGNED 关键字，表示无符号整数，这样可以将正数的存储范围扩大一倍。
 
-浮点数：
+浮点数：FLOAT、DOUBLE、DECIMAL
 
-* FLOAT
-* DOUBLE
-* DECIMAL
+### 2、字符串类型
 
-### 2. 字符串类型
+短字符串：CHAR、VARCHAR
 
-短字符串：
+长文本：TINYTEXT、TEXT、MEDIUMTEXT、LONGTEXT
 
-* CHAR
-* VACHAR
+### 3、日期时间类型
 
-长文本：
+DATE、TIME、YEAR、DATETIME、TIMESTAMP
 
-* TINYTEXT
-* TEXT
-* MEDIUMTEXT
-* LONGTEXT
+## 四、MySQL 的函数
 
-### 3. 日期时间类型
 
-* DATE
-* TIME
-* YEAR
-* DATETIME
-* TIMESTAMP
+
+
+
+
+
+
+
+## 五、MySQL 的约束
