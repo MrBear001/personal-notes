@@ -121,12 +121,76 @@ DATE、TIME、YEAR、DATETIME、TIMESTAMP
 
 ## 四、MySQL 的函数
 
+Excel 表格提供有大量的函数便于我们进行统计计算，而 MySQL 也提供了大量内置函数，用于处理字符串、数值、日期时间、聚合操作等，常见的函数如下。
 
+### 1、字符串函数
 
+```sql
+# CONCAT 连接字符串
+SELECT CONCAT('Hello', ' ', 'World'); # 'Hello World'
+# TRIM 去除字符串首尾的空格
+SELECT TRIM('  hello  '); # 'hello'
+```
 
+### 2、数值函数
 
+```sql
+# ABS 取绝对值
+SELECT ABS(-10); # 10
+# ROUND 四舍五入保留几位小数
+SELECT ROUND(123.456, 2); # 123.46
+```
 
+### 3、日期时间函数
 
+```sql
+# NOW 返回当前时间
+SELECT NOW(); # 如 '2025-12-08 15:50:00'
+# DATEDIFF 计算两个日期相差的天数
+SELECT DATEDIFF('2025-12-10', '2025-12-08'); # 2
+```
 
+### 4、聚合函数
+
+```sql
+# COUNT 统计数量
+SELECT COUNT(*) FROM users;
+# SUM 求和
+SELECT SUM(salary) FROM employees;
+# AVG 求平均值
+SELECT AVG(score) FROM students;
+# MAX MIN 获取最大最小值
+SELECT MAX(price), MIN(price) FROM products;
+```
+
+### 5、流程控制函数
+
+```sql
+# IF 条件判断
+SELECT IF(1 > 0, 'Yes', 'No'); # 'Yes'
+# CASE 多条件判断
+SELECT 
+  name,
+  CASE 
+    WHEN score >= 90 THEN 'A'
+    WHEN score >= 80 THEN 'B'
+    ELSE 'C'
+  END AS grade
+FROM students;
+```
 
 ## 五、MySQL 的约束
+
+我们在建表时可以给每个字段加上约束，约束是作用在字段上的规则，通过它可以保证数据库中数据的正确性、有效性和完整性。
+
+MySQL 中主要提供了以下几种约束：
+
+| 约束       | 关键字         | 作用                                                         |
+| ---------- | -------------- | ------------------------------------------------------------ |
+| 主键约束   | PRIMARY KEY    | 确保该字段是行记录的唯一标识，一个表只能有一个主键约束       |
+| 自增约束   | AUTO_INCREMENT | 确保该字段是自增且唯一的，一个表只能有一个自增约束并且只能用于整数列 |
+| 唯一约束   | UNIQUE         | 确保该字段是唯一的，不会重复的                               |
+| 非空约束   | NOT NULL       | 确保该字段是不为空的                                         |
+| 检查约束   | CHECK          | 确保该字段满足自定义的规则                                   |
+| 外键约束   | FOREIGN KEY    | 确保该字段引用的是另一张表中存在的值                         |
+| 默认值约束 | DEFAULT        | 确保该字段如果不指定值的话，会有一个默认值                   |
