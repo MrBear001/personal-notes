@@ -285,9 +285,69 @@ spring:
 
 ![image-20251211130627371](./assets/image-20251211130627371.png)
 
+## 7. Seata 分布式事务
 
+### 7.1 Seata 是什么
 
+Seata 是阿里巴巴开源的分布式事务框架，是优秀的分布式事务解决方案。
 
+在微服务架构中，有些业务是跨服务的，如何保证每个服务的事务（分支事务）作为一个整体（全局事务）同时成功或失败成了一个问题，即分布式事务问题。
 
+分布式事务的解决方案大概就是找一个统一的事务协调者，与多个分支事务通信，检测每个分支事务的执行状态，保证全局事务下的每一个分支事务同时成功或失败即可。大多数的分布式事务框架都是基于这个理论来实现的。
 
+Seata 也不例外，在 Seata 的事务管理中有三个重要的角色：
 
+* TC (Transaction Coordinator) —— 事务协调者 ——维护全局和分支事务的状态，协调全局事务提交或回滚。
+* TM (Transaction Manager) —— 事务管理器 —— 定义全局事务的范围、开始全局事务、提交或回滚全局事务。 
+* RM (Resource Manager) —— 资源管理器 —— 与 TC 交谈以注册分支事务和报告分支事务的状态，并驱动分支事务提交或回滚。 
+
+Seata 的工作架构如图所示：
+
+![image-20251211170812971](./assets/image-20251211170812971.png)
+
+其中，TM 和 RM 可以理解为 Seata 的客户端部分，引入到参与事务的微服务依赖中即可。将来 TM 和 RM 就会协助微服务，实现本地分支事务与 TC 之间的交互，实现事务的提交或回滚。而 TC 服务则是事务协调中心，是一个独立的微服务，需要单独部署。
+
+### 7.2 Seata 的使用
+
+1）部署 TC 服务。
+
+2）在微服务中集成 Seata 客户端，即引入相关依赖并做一些配置：
+
+```xml
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alibaba-seata</artifactId>
+</dependency>
+```
+
+```yaml
+seata:
+  registry: # TC服务注册中心的配置，微服务根据这些信息去注册中心获取tc服务地址
+    type: nacos # 注册中心类型 nacos
+    nacos:
+      server-addr: 192.168.150.101:8848 # nacos地址
+      namespace: "" # namespace，默认为空
+      group: DEFAULT_GROUP # 分组，默认是DEFAULT_GROUP
+      application: seata-server # seata服务名称
+      username: nacos
+      password: nacos
+  tx-service-group: hmall # 事务组名称
+  service:
+    vgroup-mapping: # 事务组与tc集群的映射关系
+      hmall: "default"
+```
+
+3）在需要开启全局事务的业务方法上加上 `@GlobalTransactional` 注解。 
+
+`@GlobalTransactional` 注解就是在标记事务的起点，将来 TM 就会基于这个方法判断全局事务范围，初始化全局事务。
+
+### 7.3 Seata 分布式事务的解决方案
+
+Seata 支持四种不同的分布式事务解决方案：
+
+- XA
+- TCC
+- AT
+- SAGA
+
+不同的解决方案在使用上并没有什么太大的区别，比较常用的是 AT 模式，它追求的是最终一致性。
